@@ -26,7 +26,9 @@ out = []
 songOffset=rom[offset]+(rom[offset+1]*0x100)+(rom[offset+2]*0x10000)+((rom[offset+3]&0x7)*0x1000000)
 romLoc=songOffset
 numChannels=rom[romLoc]+(rom[romLoc+1]*0x100)
-romLoc+=8
+romLoc+=4
+tableOffset=rom[romLoc]+(rom[romLoc+1]*0x100)+(rom[romLoc+2]*0x10000)+((rom[romLoc+3]&0x7)*0x1000000)
+romLoc+=4
 ch1Offset=rom[romLoc]+(rom[romLoc+1]*0x100)+(rom[romLoc+2]*0x10000)+((rom[romLoc+3]&0x7)*0x1000000)
 romLoc=songOffset
 pointerOffset=ch1Offset-((numChannels+3)*4)
@@ -42,6 +44,18 @@ romLoc=ch1Offset
 for i in range(songSize):
 	out.append(rom[romLoc])
 	romLoc+=1
+pointerFix = []
+pointerFix.append(8) #address 0x8 table pointer
+pointerFix.append(len(out)) #pointer where table will be put
+
+keyPointer = []
+splitPointer = []
+instPointer = []
+wavPointer = []
+romLoc=tableOffset
+for i in range(128):
+	type=rom[romLoc]
+	#...
 
 outfile=open(sysargv[1].replace(".gba",".bin"),"wb")
 for i in range(len(out)):
