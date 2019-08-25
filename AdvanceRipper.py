@@ -1,5 +1,5 @@
 #AdvanceRipper by FroggestSpirit
-version="0.1.1"
+version="0.1.2"
 #Rip M4A engine soundtracks from GBA roms
 #Make backups, this can overwrite files without confirmation
 #Usage: "AdvanceRipper.py" "input.gba" "address of song table"
@@ -29,7 +29,7 @@ numSongs = 0
 tempOffset = offset
 searching = True
 while(searching):
-	if(rom[tempOffset+3]==0x08): #probably a song pointer
+	if((rom[tempOffset+3]&0xFE)==0x08): #probably a song pointer
 		songOffset.append(rom[tempOffset]+(rom[tempOffset+1]*0x100)+(rom[tempOffset+2]*0x10000)+((rom[tempOffset+3]&0x7)*0x1000000))
 		numSongs+=1
 	else:
@@ -123,7 +123,7 @@ for si in range(len(tableOffset)>>1):
 			out.append(rom[romLoc+3])
 			tempPointer=rom[romLoc+4]+(rom[romLoc+5]*0x100)+(rom[romLoc+6]*0x10000)+((rom[romLoc+7]&0x7)*0x1000000)
 			tempPointer2=rom[romLoc+8]+(rom[romLoc+9]*0x100)+(rom[romLoc+10]*0x10000)+((rom[romLoc+11]&0x7)*0x1000000)
-			if(rom[romLoc+7]==0x08):
+			if((rom[romLoc+7]&0xFE)==0x08):
 				if(type==0x00 or type==0x08):
 					instPointer.append(len(out))
 					instPointer.append(tempPointer)
@@ -137,7 +137,7 @@ for si in range(len(tableOffset)>>1):
 						print("Out of bounds pointer @ "+str(romLoc+4))
 						sys.exit()
 				elif(type==0x40):
-					if(rom[romLoc+11]==0x08):
+					if((rom[romLoc+11]&0xFE)==0x08):
 						kSplitPointer.append(len(out))
 						kSplitPointer.append(tempPointer)
 						if(tempPointer>=romSize):
@@ -198,12 +198,20 @@ for i in range(len(keyPointer)>>1):
 			out.append(rom[romLoc+1])
 			out.append(rom[romLoc+2])
 			out.append(rom[romLoc+3])
-			if(type==0x00 or type==0x08):
-				instPointer.append(len(out))
-				instPointer.append(rom[romLoc+4]+(rom[romLoc+5]*0x100)+(rom[romLoc+6]*0x10000)+((rom[romLoc+7]&0x7)*0x1000000))
-			elif(type==0x03 or type==0x0B):
-				wavPointer.append(len(out))
-				wavPointer.append(rom[romLoc+4]+(rom[romLoc+5]*0x100)+(rom[romLoc+6]*0x10000)+((rom[romLoc+7]&0x7)*0x1000000))
+			tempPointer=rom[romLoc+4]+(rom[romLoc+5]*0x100)+(rom[romLoc+6]*0x10000)+((rom[romLoc+7]&0x7)*0x1000000)
+			if((rom[romLoc+7]&0xFE)==0x08):
+				if(type==0x00 or type==0x08):
+					instPointer.append(len(out))
+					instPointer.append(tempPointer)
+					if(tempPointer>=romSize):
+							print("Out of bounds pointer @ "+str(romLoc+4))
+							sys.exit()
+				elif(type==0x03 or type==0x0B):
+					wavPointer.append(len(out))
+					wavPointer.append(tempPointer)
+					if(tempPointer>=romSize):
+							print("Out of bounds pointer @ "+str(romLoc+4))
+							sys.exit()
 
 			out.append(rom[romLoc+4])
 			out.append(rom[romLoc+5])
@@ -237,12 +245,20 @@ for i in range(len(aSplitPointer)>>1):
 			out.append(rom[romLoc+1])
 			out.append(rom[romLoc+2])
 			out.append(rom[romLoc+3])
-			if(type==0x00 or type==0x08):
-				instPointer.append(len(out))
-				instPointer.append(rom[romLoc+4]+(rom[romLoc+5]*0x100)+(rom[romLoc+6]*0x10000)+((rom[romLoc+7]&0x7)*0x1000000))
-			elif(type==0x03 or type==0x0B):
-				wavPointer.append(len(out))
-				wavPointer.append(rom[romLoc+4]+(rom[romLoc+5]*0x100)+(rom[romLoc+6]*0x10000)+((rom[romLoc+7]&0x7)*0x1000000))
+			tempPointer=rom[romLoc+4]+(rom[romLoc+5]*0x100)+(rom[romLoc+6]*0x10000)+((rom[romLoc+7]&0x7)*0x1000000)
+			if((rom[romLoc+7]&0xFE)==0x08):
+				if(type==0x00 or type==0x08):
+					instPointer.append(len(out))
+					instPointer.append(tempPointer)
+					if(tempPointer>=romSize):
+							print("Out of bounds pointer @ "+str(romLoc+4))
+							sys.exit()
+				elif(type==0x03 or type==0x0B):
+					wavPointer.append(len(out))
+					wavPointer.append(tempPointer)
+					if(tempPointer>=romSize):
+							print("Out of bounds pointer @ "+str(romLoc+4))
+							sys.exit()
 
 			out.append(rom[romLoc+4])
 			out.append(rom[romLoc+5])
@@ -290,11 +306,13 @@ for i in range(len(instPointer)>>1):
 					pointerFix.append(len(out))
 					instPointer[(ti*2)]=0xFFFFFFFF
 					instPointer[(ti*2)+1]=0xFFFFFFFF
-		instSize=rom[romLoc+12]+(rom[romLoc+13]*0x100)+(rom[romLoc+14]*0x10000)+((rom[romLoc+15]&0x7)*0x1000000)
-		instSize+=19 #add in the header plus 3 extra sample bytes
-		for ii in range(instSize):
-			out.append(rom[romLoc])
-			romLoc+=1
+		if(rom[romLoc]==0 and rom[romLoc+1]==0 and rom[romLoc+2]==0 and (rom[romLoc+3]&0xBF)==0):
+			instSize=rom[romLoc+12]+(rom[romLoc+13]*0x100)+(rom[romLoc+14]*0x10000)+((rom[romLoc+15]&0x7)*0x1000000)
+			instSize+=19 #add in the header plus 3 extra sample bytes
+			if(romLoc+instSize<romSize):
+				for ii in range(instSize):
+					out.append(rom[romLoc])
+					romLoc+=1
 		
 for i in range(len(pointerFix)>>1):
 	romLoc=pointerFix[(i*2)]
