@@ -2,14 +2,14 @@
 version="0.1"
 #Rip M4A engine soundtracks from GBA roms
 #Make backups, this can overwrite files without confirmation
-#Usaage: "AdvanceRipper.py" "input.gba" "address of song table"
+#Usage: "AdvanceRipper.py" "input.gba" "address of song table"
 import sys
 import math
 
 sysargv=sys.argv
 echo=True
 mode=0
-print("GBARipper "+version+"\n")
+print("AdvanceRipper "+version+"\n")
 infileArg=-1;
 outfileArg=-1;
 if(len(sysargv)==3):
