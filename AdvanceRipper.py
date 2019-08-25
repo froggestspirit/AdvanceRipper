@@ -1,5 +1,5 @@
 #AdvanceRipper by FroggestSpirit
-version="0.1"
+version="0.1.1"
 #Rip M4A engine soundtracks from GBA roms
 #Make backups, this can overwrite files without confirmation
 #Usage: "AdvanceRipper.py" "input.gba" "address of song table"
@@ -304,7 +304,7 @@ for i in range(len(pointerFix)>>1):
 	out[romLoc+3]=(((pointerFix[(i*2)+1])&0xFF000000)>>24)
 
 print("\nWriting to file...")
-outfile=open(sysargv[1].replace(".gba",".bin"),"wb")
+outfile=open(sysargv[1]+".bin","wb")
 for i in range(len(out)):
 	outfile.write(out[i].to_bytes(1,byteorder='little'))
 	
