@@ -1,5 +1,5 @@
 #AdvanceRipper by FroggestSpirit
-version="0.1.2"
+version="0.1.3"
 #Rip M4A engine soundtracks from GBA roms
 #Make backups, this can overwrite files without confirmation
 #Usage: "AdvanceRipper.py" "input.gba" "address of song table"
@@ -308,11 +308,22 @@ for i in range(len(instPointer)>>1):
 					instPointer[(ti*2)+1]=0xFFFFFFFF
 		if(rom[romLoc]==0 and rom[romLoc+1]==0 and rom[romLoc+2]==0 and (rom[romLoc+3]&0xBF)==0):
 			instSize=rom[romLoc+12]+(rom[romLoc+13]*0x100)+(rom[romLoc+14]*0x10000)+((rom[romLoc+15]&0x7)*0x1000000)
-			instSize+=19 #add in the header plus 3 extra sample bytes
-			if(romLoc+instSize<romSize):
-				for ii in range(instSize):
-					out.append(rom[romLoc])
-					romLoc+=1
+			if(rom[romLoc+12]==0 and rom[romLoc+13]==0 and rom[romLoc+14]==0 and (rom[romLoc+15])==0):#size is 0. check if this is a Camelot Synth
+				if(rom[romLoc+4]==0x20 and rom[romLoc+5]==0x89 and rom[romLoc+6]==0x05 and (rom[romLoc+7])==0x01):#frequency check
+					if(rom[romLoc+8]==0 and rom[romLoc+9]==0 and rom[romLoc+10]==0 and (rom[romLoc+11])==0):#loop pointer check
+						if(rom[romLoc+17]==0):
+							instSize=0x18#square synth with arguments
+						else:
+							instSize=0x14#synth without arguments
+						for ii in range(instSize):
+							out.append(rom[romLoc])
+							romLoc+=1
+			else:
+				instSize+=19 #add in the header plus 3 extra sample bytes
+				if(romLoc+instSize<romSize):
+					for ii in range(instSize):
+						out.append(rom[romLoc])
+						romLoc+=1
 		
 for i in range(len(pointerFix)>>1):
 	romLoc=pointerFix[(i*2)]
